@@ -20,7 +20,6 @@ import com.jinu.imagelabel.navigation.Navigation
 import com.jinu.imagelabel.ui.theme.ImageLabelTheme
 
 class MainActivity : ComponentActivity() {
-    @RequiresApi(Build.VERSION_CODES.R)
     @OptIn(ExperimentalPermissionsApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +55,8 @@ class MainActivity : ComponentActivity() {
                                     }
                                 }
                             }
+
+                            else -> {}
                         }
                     }
 

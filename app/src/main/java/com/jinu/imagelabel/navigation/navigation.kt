@@ -1,28 +1,26 @@
 package com.jinu.imagelabel.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavArgs
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import com.jinu.imagelabel.mvvm.MainViewModel
 import com.jinu.imagelabel.screens.CameraScreen
 import com.jinu.imagelabel.screens.HomeScreen
 import com.jinu.imagelabel.screens.ResultScreen
 
 
 @Composable
-fun Navigation(navController:NavHostController){
+fun Navigation(navController:NavHostController,viewModel: MainViewModel){
     NavHost(navController = navController , startDestination = Screens.CameraScreen.route){
         composable(Screens.HomeScreen.route){
-            HomeScreen(navController).View()
+            HomeScreen(navController,viewModel).View()
         }
         composable(Screens.CameraScreen.route){
-            CameraScreen(navController).View()
+            CameraScreen(navController,viewModel).View()
         }
         composable(Screens.ResultScreen.route){
-            ResultScreen(navController).View()
+            ResultScreen(navController,viewModel).View()
         }
     }
 

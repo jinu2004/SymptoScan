@@ -1,6 +1,8 @@
 package com.jinu.imagelabel.mvvm
 
 import android.graphics.Bitmap
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.jinu.imagelabel.classification.ClassificationResult
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,8 +12,7 @@ class MainViewModel:ViewModel() {
     private val _bitmaps = MutableStateFlow<List<Bitmap>>(emptyList())
     val bitmaps = _bitmaps.asStateFlow()
 
-    private val _detectionResult = MutableStateFlow<List<ClassificationResult>>(emptyList())
-    val detectionResult = _detectionResult.asStateFlow()
+    var _filePath = mutableStateOf("")
 
 
 

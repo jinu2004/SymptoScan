@@ -4,14 +4,16 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.BaseOptions.DelegateOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 
 class ModelClassifier(
-    private val context: Context,
-    private val threshold: Float = 0.05f,
-    private val maxResult: Int = 2
+    context: Context,
+    threshold: Float = 0.5f,
+    maxResult: Int = 5
 ) : ModelClassifierInterface {
+
     private val options: ObjectDetector.ObjectDetectorOptions =
         ObjectDetector.ObjectDetectorOptions.builder()
             .setBaseOptions(BaseOptions.builder().setModelAssetPath("efficientdet_lite0.tflite").build())
@@ -21,7 +23,7 @@ class ModelClassifier(
             .build();
     private val objectDetector: ObjectDetector = ObjectDetector.createFromOptions(context, options);
 
-    override fun classify(bitmap: Bitmap, rotation: Int): List<ClassificationResult> {
+    override fun classify(bitmap: Bitmap): List<ClassificationResult> {
         val mpImage = BitmapImageBuilder(bitmap).build()
         val result = objectDetector.detect(mpImage)
 

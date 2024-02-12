@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name" translatable="false">AiML</string>
+    <string name="available_models" translatable="false">Available Model</string>
+    <string name="discription">Welcome to DoctorAi, revolutionizing healthcare with AI-driven disease diagnosis. Empowering doctors with fast, accurate, and personalized insights for improved patient outcomes</string>
 </resources>

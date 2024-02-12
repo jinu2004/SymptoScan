@@ -86,17 +86,6 @@ class ResultScreen(private val navController: NavController, private val viewMod
     }
 
 
-    @Composable
-    @Preview
-    fun JetKiteButtonPreview() {
-        ImageLabelTheme {
-            Surface {
-                View()
-            }
-
-        }
-    }
-
 }
 
 

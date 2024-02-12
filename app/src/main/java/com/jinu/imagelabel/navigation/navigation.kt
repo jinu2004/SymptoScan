@@ -12,7 +12,7 @@ import com.jinu.imagelabel.screens.ResultScreen
 
 @Composable
 fun Navigation(navController:NavHostController,viewModel: MainViewModel){
-    NavHost(navController = navController , startDestination = Screens.CameraScreen.route){
+    NavHost(navController = navController , startDestination = Screens.HomeScreen.route){
         composable(Screens.HomeScreen.route){
             HomeScreen(navController,viewModel).View()
         }

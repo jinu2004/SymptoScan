@@ -1,16 +1,13 @@
 package com.jinu.imagelabel.screens
 
-import android.content.Intent
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.Icon
 import android.net.Uri
-import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,35 +15,30 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FileOpen
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonColors
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -57,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusEvent
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -69,26 +62,24 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.core.app.ActivityCompat.startActivityForResult
-import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
-import com.jinu.imagelabel.MainActivity
 import com.jinu.imagelabel.R
 import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.mvvm.MainViewModel
 import com.jinu.imagelabel.navigation.Screens
+import com.jinu.imagelabel.ui.theme.items.centerCrop
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 class HomeScreen(private val navController: NavController, private val viewModel: MainViewModel) {
+    private var selectedImage: ImageBitmap? by mutableStateOf(null)
+    private var tempFile: File? = null
+
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun View() {
 
         var model by remember {
-            mutableStateOf("Brain Tumor")
+            mutableStateOf(Model.BrainTumor.route)
         }
         var threshold by remember {
             mutableDoubleStateOf(0.5)
@@ -100,23 +91,23 @@ class HomeScreen(private val navController: NavController, private val viewModel
             mutableStateOf("")
         }
 
-        val modelList = listOf(Model.BrainTumor.route, Model.BoneFracture.route)
+        val localContext = LocalContext.current.applicationContext
+
+
+        val modelList = listOf(Model.BrainTumor.route, Model.Retina.route)
 
         var dropDownState by remember {
             mutableStateOf(false)
         }
-        val context = LocalContext.current
+        LocalContext.current
         val contentLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent(),
-            onResult = { uri: Uri? ->
-                uri?.let {
-                    pathFile = it.path.toString()
-                    fileToBitmap(File(pathFile))?.let { it1 ->
-                        viewModel._filePath.value = storeImageInTempFile(it1).toString()
-                    }
-                }
-            }
-        )
+            contract = ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            pathFile = uri?.path.toString()
+            viewModel._filePath.value = loadSelectedImage(localContext, uri!!)!!
+        }
+
+        Log.e("file", viewModel._filePath.value)
 
 
 
@@ -172,7 +163,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                             onDismissRequest = { dropDownState = false },
                             offset = DpOffset(30.dp, 20.dp)
                         ) {
-                            modelList.forEachIndexed { index, s ->
+                            modelList.forEachIndexed { _, s ->
                                 DropdownMenuItem(
                                     text = { Text(text = s) },
                                     onClick = { model = s;dropDownState = false },
@@ -232,7 +223,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(20.dp)
-                            .wrapContentHeight()
+                            .wrapContentSize()
                     ) {
                         Box(
                             modifier = Modifier
@@ -240,16 +231,29 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                 .fillMaxHeight(),
                         ) {
                             if (File(viewModel._filePath.value).exists()) {
+                                Log.e("filepath", viewModel._filePath.value)
                                 fileToBitmap(File(viewModel._filePath.value))?.let { it1 ->
                                     Image(
-                                        bitmap = it1.asImageBitmap(),
+                                        bitmap = it1.centerCrop(640, 640).asImageBitmap(),
                                         contentDescription = "",
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .fillMaxHeight(),
                                         contentScale = ContentScale.Fit
                                     )
-                                    Log.e("filepath",viewModel._filePath.value)
+                                    IconButton(
+                                        onClick = {
+                                            File(viewModel._filePath.value).delete();viewModel._filePath.value =
+                                            ""
+                                        },
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Close,
+                                            contentDescription = "None"
+                                        )
+                                    }
                                 }
                             } else {
                                 Row(
@@ -298,6 +302,42 @@ class HomeScreen(private val navController: NavController, private val viewModel
 
 
                 }
+                item {
+
+                    Button(onClick = {
+
+
+                        when (model) {
+                            Model.BrainTumor.route -> navController.navigate(
+                                Screens.ResultScreen.withArgs(
+                                    Model.BrainTumor.path,
+                                    threshold.toString(),
+                                    maxValue.toString()
+                                )
+                            )
+
+                            Model.Retina.route -> navController.navigate(
+                                Screens.ResultScreen.withArgs(
+                                    Model.Retina.path,
+                                    threshold.toString(),
+                                    maxValue.toString()
+                                )
+                            )
+
+                            else -> navController.navigate(
+                                Screens.ResultScreen.withArgs(
+                                    Model.BrainTumor.path,
+                                    threshold.toString(),
+                                    maxValue.toString()
+                                )
+                            )
+                        }
+
+
+                    }) {
+                        Text(text = "Submit")
+                    }
+                }
 
             }
 
@@ -332,15 +372,14 @@ class HomeScreen(private val navController: NavController, private val viewModel
         }
     }
 
-    private fun storeImageInTempFile(bitmap: Bitmap): String? {
-        var tempFile: File? = null
-        try {
-            tempFile = File.createTempFile("temp_image", ".jpg")
-            val outputStream = FileOutputStream(tempFile)
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
-            outputStream.close()
-        } catch (e: IOException) {
-            e.printStackTrace()
+
+    private fun loadSelectedImage(context: Context, uri: Uri): String? {
+        val tempDir = context.cacheDir
+        tempFile = File.createTempFile("temp_image", null, tempDir)
+        context.contentResolver.openInputStream(uri)?.use { input ->
+            tempFile?.outputStream()?.use { output ->
+                input.copyTo(output)
+            }
         }
         return tempFile?.path
     }

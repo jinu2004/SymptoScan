@@ -2,7 +2,6 @@ package com.jinu.imagelabel.screens
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.util.Log
 import androidx.camera.core.CameraSelector
@@ -119,12 +118,16 @@ class CameraScreen(private val navController: NavController, private val viewMod
     @Composable
     private fun CameraPreview(controller: LifecycleCameraController) {
         val lifecycleOwner = LocalLifecycleOwner.current
+
+
         AndroidView(factory = {
             PreviewView(it).apply {
                 this.controller = controller
                 controller.bindToLifecycle(lifecycleOwner)
             }
-        }, modifier = Modifier.fillMaxSize())
+        }, modifier = Modifier.fillMaxSize()) {
+            it.onDrawForeground(android.graphics.Canvas())
+        }
     }
 
     private fun takePhoto(
@@ -149,7 +152,7 @@ class CameraScreen(private val navController: NavController, private val viewMod
                         true
                     )
                     onPhoto(rotatedBitmap)
-                    navController.navigate(Screens.ResultScreen.route)
+                    navController.navigate(Screens.HomeScreen.route)
 
 
                 }

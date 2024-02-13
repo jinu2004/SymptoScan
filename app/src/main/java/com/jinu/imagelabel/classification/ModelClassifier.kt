@@ -10,13 +10,13 @@ import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 
 class ModelClassifier(
     context: Context,
-    threshold: Float = 0.6f,
-    maxResult: Int = 2
+    threshold: Float = 0.5f,
+    maxResult: Int = 1
 ) : ModelClassifierInterface {
 
     private val options: ObjectDetector.ObjectDetectorOptions =
         ObjectDetector.ObjectDetectorOptions.builder()
-            .setBaseOptions(BaseOptions.builder().setModelAssetPath("cholosterol-model.tflite").build())
+            .setBaseOptions(BaseOptions.builder().setModelAssetPath("bone-fracture-detector-model.tflite").build())
             .setRunningMode(RunningMode.IMAGE)
             .setMaxResults(maxResult)
             .setScoreThreshold(threshold)

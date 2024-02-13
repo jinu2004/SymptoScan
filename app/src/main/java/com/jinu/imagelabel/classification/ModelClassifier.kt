@@ -4,24 +4,24 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
+import com.google.mediapipe.tasks.core.BaseOptions.DelegateOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
-import com.jinu.finddiseaseai.classification.ModelClassifierInterface
 
 class ModelClassifier(
     context: Context,
-    threshold: Float = 0.8f,
+    threshold: Float = 0.5f,
     maxResult: Int = 1
 ) : ModelClassifierInterface {
 
     private val options: ObjectDetector.ObjectDetectorOptions =
         ObjectDetector.ObjectDetectorOptions.builder()
-            .setBaseOptions(BaseOptions.builder().setModelAssetPath("brain-tumor-detector-model.tflite").build())
+            .setBaseOptions(BaseOptions.builder().setModelAssetPath("bone-fracture-detector-model.tflite").build())
             .setRunningMode(RunningMode.IMAGE)
             .setMaxResults(maxResult)
             .setScoreThreshold(threshold)
-            .build()
-    private val objectDetector: ObjectDetector = ObjectDetector.createFromOptions(context, options)
+            .build();
+    private val objectDetector: ObjectDetector = ObjectDetector.createFromOptions(context, options);
 
     override fun classify(bitmap: Bitmap): List<ClassificationResult> {
         val mpImage = BitmapImageBuilder(bitmap).build()

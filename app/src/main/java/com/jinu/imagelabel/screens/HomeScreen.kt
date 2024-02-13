@@ -77,7 +77,10 @@ import com.jinu.imagelabel.MainActivity
 import com.jinu.imagelabel.R
 import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.mvvm.MainViewModel
+import com.jinu.imagelabel.navigation.Screens
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class HomeScreen(private val navController: NavController, private val viewModel: MainViewModel) {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -108,6 +111,9 @@ class HomeScreen(private val navController: NavController, private val viewModel
             onResult = { uri: Uri? ->
                 uri?.let {
                     pathFile = it.path.toString()
+                    fileToBitmap(File(pathFile))?.let { it1 ->
+                        viewModel._filePath.value = storeImageInTempFile(it1).toString()
+                    }
                 }
             }
         )
@@ -243,6 +249,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                             .fillMaxHeight(),
                                         contentScale = ContentScale.Fit
                                     )
+                                    Log.e("filepath",viewModel._filePath.value)
                                 }
                             } else {
                                 Row(
@@ -253,7 +260,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                     horizontalArrangement = Arrangement.spacedBy(20.dp)
                                 ) {
                                     IconButton(
-                                        onClick = { /*TODO*/ },
+                                        onClick = { navController.navigate(Screens.CameraScreen.route) },
                                         modifier = Modifier
                                             .size(70.dp)
                                             .clip(RoundedCornerShape(100)),
@@ -323,6 +330,19 @@ class HomeScreen(private val navController: NavController, private val viewModel
             Log.e("errorfrom", e.printStackTrace().toString())
             null
         }
+    }
+
+    private fun storeImageInTempFile(bitmap: Bitmap): String? {
+        var tempFile: File? = null
+        try {
+            tempFile = File.createTempFile("temp_image", ".jpg")
+            val outputStream = FileOutputStream(tempFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+        return tempFile?.path
     }
 
 

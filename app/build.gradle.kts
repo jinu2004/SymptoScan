@@ -92,6 +92,7 @@ dependencies {
     //noinspection GradleDependency
     implementation("androidx.camera:camera-extensions:$cameraxVersion")
     implementation ("com.google.mediapipe:tasks-vision:latest.release")
+    implementation("com.vanniktech:android-image-cropper:4.5.0")
 
     implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.0")
     implementation("org.tensorflow:tensorflow-lite-gpu-delegate-plugin:0.4.0")

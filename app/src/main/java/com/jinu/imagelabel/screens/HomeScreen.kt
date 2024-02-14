@@ -1,12 +1,13 @@
 package com.jinu.imagelabel.screens
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
+import android.graphics.ImageDecoder
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,8 +16,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -27,6 +30,7 @@ import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +38,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -63,12 +68,18 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 import com.jinu.imagelabel.R
 import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.mvvm.MainViewModel
 import com.jinu.imagelabel.navigation.Screens
 import com.jinu.imagelabel.ui.theme.items.centerCrop
 import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 class HomeScreen(private val navController: NavController, private val viewModel: MainViewModel) {
     private var selectedImage: ImageBitmap? by mutableStateOf(null)
@@ -100,12 +111,27 @@ class HomeScreen(private val navController: NavController, private val viewModel
             mutableStateOf(false)
         }
         LocalContext.current
-        val contentLauncher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.GetContent()
-        ) { uri: Uri? ->
-            pathFile = uri?.path.toString()
-            viewModel._filePath.value = loadSelectedImage(localContext, uri!!)!!
-        }
+        val imageCropLauncher =
+            rememberLauncherForActivityResult(contract = CropImageContract()) { result ->
+                if (result.isSuccessful) {
+                    result.uriContent?.let {
+                        val bitmap = if (Build.VERSION.SDK_INT < 28) {
+                            MediaStore.Images
+                                .Media.getBitmap(localContext.contentResolver, it)
+                        } else {
+                            val source = ImageDecoder
+                                .createSource(localContext.contentResolver, it)
+                            ImageDecoder.decodeBitmap(source)
+                        }
+
+                        viewModel._filePath.value = storeImageInTempFile(bitmap)!!
+                    }
+
+                } else {
+                    println("ImageCropping error: ${result.error}")
+                }
+            }
+
 
         Log.e("file", viewModel._filePath.value)
 
@@ -256,42 +282,87 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                     }
                                 }
                             } else {
-                                Row(
+                                OutlinedCard(
                                     modifier = Modifier
-                                        .align(Alignment.Center)
-                                        .padding(50.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(20.dp)
+                                        .width(320.dp)
+                                        .height(320.dp)
+                                        .align(Alignment.Center),
+                                    colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                                    border = BorderStroke(
+                                        5.dp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
                                 ) {
-                                    IconButton(
-                                        onClick = { navController.navigate(Screens.CameraScreen.route) },
+                                    Text(
+                                        text = "Select a Image", modifier = Modifier
+                                            .align(
+                                                Alignment.CenterHorizontally
+                                            )
+                                            .padding(top = 30.dp)
+                                    )
+                                    Row(
                                         modifier = Modifier
-                                            .size(70.dp)
-                                            .clip(RoundedCornerShape(100)),
-                                        colors = IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                                        )
+                                            .align(Alignment.CenterHorizontally)
+                                            .padding(50.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(20.dp)
                                     ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Camera,
-                                            contentDescription = ""
-                                        )
-                                    }
-                                    IconButton(
-                                        onClick = {
-                                            contentLauncher.launch("image/*")
-                                        },
-                                        modifier = Modifier
-                                            .size(70.dp)
-                                            .clip(RoundedCornerShape(100)),
-                                        colors = IconButtonDefaults.filledIconButtonColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                                        )
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.FileOpen,
-                                            contentDescription = ""
-                                        )
+                                        IconButton(
+                                            onClick = {
+                                                val cropOptions = CropImageContractOptions(
+                                                    null,
+                                                    CropImageOptions(
+                                                        imageSourceIncludeGallery = false,
+                                                        imageSourceIncludeCamera = true,
+                                                        cropShape = CropImageView.CropShape.RECTANGLE,
+                                                        minCropResultWidth = 640,
+                                                        minCropResultHeight = 640,
+                                                        maxCropResultHeight = 640,
+                                                        maxCropResultWidth = 640
+                                                    )
+                                                )
+                                                imageCropLauncher.launch(cropOptions)
+                                            },
+                                            modifier = Modifier
+                                                .size(70.dp)
+                                                .clip(RoundedCornerShape(100)),
+                                            colors = IconButtonDefaults.filledIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Camera,
+                                                contentDescription = ""
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                val cropOptions = CropImageContractOptions(
+                                                    null,
+                                                    CropImageOptions(
+                                                        imageSourceIncludeGallery = true,
+                                                        imageSourceIncludeCamera = false,
+                                                        cropShape = CropImageView.CropShape.RECTANGLE,
+                                                        minCropResultWidth = 640,
+                                                        minCropResultHeight = 640,
+                                                        maxCropResultHeight = 640,
+                                                        maxCropResultWidth = 640
+                                                    )
+                                                )
+                                                imageCropLauncher.launch(cropOptions)
+                                            },
+                                            modifier = Modifier
+                                                .size(70.dp)
+                                                .clip(RoundedCornerShape(100)),
+                                            colors = IconButtonDefaults.filledIconButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                            )
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.FileOpen,
+                                                contentDescription = ""
+                                            )
+                                        }
                                     }
                                 }
 
@@ -372,17 +443,17 @@ class HomeScreen(private val navController: NavController, private val viewModel
         }
     }
 
-
-    private fun loadSelectedImage(context: Context, uri: Uri): String? {
-        val tempDir = context.cacheDir
-        tempFile = File.createTempFile("temp_image", null, tempDir)
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            tempFile?.outputStream()?.use { output ->
-                input.copyTo(output)
-            }
+    private fun storeImageInTempFile(bitmap: Bitmap): String? {
+        var tempFile: File? = null
+        try {
+            tempFile = File.createTempFile("temp_image", ".jpg")
+            val outputStream = FileOutputStream(tempFile)
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
+            outputStream.close()
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
         return tempFile?.path
     }
-
 
 }

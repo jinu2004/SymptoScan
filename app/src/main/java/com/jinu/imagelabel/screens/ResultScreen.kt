@@ -8,6 +8,8 @@ import android.graphics.Rect
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +33,7 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.jinu.imagelabel.R
 import com.jinu.imagelabel.classification.Model
@@ -100,7 +103,7 @@ class ResultScreen(
                         bitmap = mutable.asImageBitmap(),
                         contentDescription = "",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.wrapContentSize()
+                        modifier = Modifier.width(640.dp).height(640.dp)
                     )
                 }
 

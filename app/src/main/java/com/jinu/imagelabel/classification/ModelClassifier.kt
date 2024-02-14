@@ -13,8 +13,8 @@ import com.jinu.imagelabel.ui.theme.items.centerCrop
 
 class ModelClassifier(
     context: Context,
-    threshold: Float = 0.5f,
-    maxResult: Int = 1,
+    threshold: Float = 0.8f,
+    maxResult: Int = 2,
     modelPath:String
 ) : ModelClassifierInterface {
 

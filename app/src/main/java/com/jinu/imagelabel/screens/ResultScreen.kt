@@ -9,19 +9,18 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.toArgb
@@ -36,10 +35,8 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.jinu.imagelabel.R
-import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.classification.ModelClassifier
 import com.jinu.imagelabel.mvvm.MainViewModel
-import com.jinu.imagelabel.ui.theme.items.centerCrop
 import java.io.File
 
 class ResultScreen(
@@ -67,10 +64,10 @@ class ResultScreen(
 
                 bitmap?.let { bitmap1 ->
                     val result =
-                        ModelClassifier(context = context, modelPath = model!!).classify(
+                        ModelClassifier(context = context, modelPath = model!!, maxResult = maxResult!!.toInt(), threshold = threshold!!.toFloat()).classify(
                             bitmap1
                         )
-                    val mutable = bitmap1.centerCrop(640, 640).copy(Bitmap.Config.ARGB_8888, true)
+                    val mutable = bitmap1.copy(Bitmap.Config.ARGB_8888, true)
                     val canvas = Canvas(mutable)
                     val h = mutable.height
                     val w = mutable.width
@@ -91,20 +88,28 @@ class ResultScreen(
                         canvas.drawRect(rect, paint)
                         paint.color = Color.Red.toArgb()
                         paint.style = Paint.Style.FILL
-                        canvas.drawText(
-                            classificationResult.name,
-                            point.left,
-                            point.top,
-                            paint
-                        )
+//                        canvas.drawText(
+//                            classificationResult.name,
+//                            point.left,
+//                            point.top,
+//                            paint
+//                        )
                     }
 
                     Image(
                         bitmap = mutable.asImageBitmap(),
                         contentDescription = "",
                         contentScale = ContentScale.Fit,
-                        modifier = Modifier.width(640.dp).height(640.dp)
+                        modifier = Modifier
+                            .width(640.dp)
+                            .height(640.dp)
+                            .padding(20.dp)
+                            .clip(
+                                RoundedCornerShape(10)
+                            )
                     )
+                    
+
                 }
 
             }

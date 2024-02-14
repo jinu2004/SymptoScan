@@ -318,7 +318,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                                         minCropResultWidth = 640,
                                                         minCropResultHeight = 640,
                                                         maxCropResultHeight = 640,
-                                                        maxCropResultWidth = 640
+                                                        maxCropResultWidth = 640,
                                                     )
                                                 )
                                                 imageCropLauncher.launch(cropOptions)

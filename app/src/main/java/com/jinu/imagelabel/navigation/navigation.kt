@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.mvvm.MainViewModel
+import com.jinu.imagelabel.screens.CameraScreen
 import com.jinu.imagelabel.screens.HomeScreen
 import com.jinu.imagelabel.screens.ResultScreen
 

@@ -140,7 +140,7 @@ class ResultScreen(
                             .fillMaxWidth()
                             .padding(40.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceAround
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
                         var text = ""
 
@@ -148,14 +148,29 @@ class ResultScreen(
                             Model.BrainTumor.path ->
                                 if (name == "0" || name == "1") {
                                     text = "Tumor"
+                                } else {
+                                    text = "Not found tumor"
+                                    x = 100f
                                 }
 
                             Model.Retina.path -> text = name
 
+                            else -> {
+                                text = "good"
+                                x = 100f
+                            }
+
                         }
 
 
-                        Text(text = text, modifier = Modifier.fillMaxWidth(0.5f))
+                        Text(
+                            text = text,
+                            modifier = Modifier,
+                            fontFamily = FontFamily(Font(resId = R.font.roboto_mono_thin)),
+                            fontWeight = FontWeight(1000),
+                            fontStyle = FontStyle.Normal,
+                            fontSize = TextUnit(20f, TextUnitType.Sp)
+                        )
 
 
 
@@ -194,7 +209,7 @@ class ResultScreen(
                 Text(
                     text = "Results",
                     modifier = Modifier,
-                    fontFamily = FontFamily(Font(resId = R.font.roboto_mono_thin)),
+                    fontFamily = FontFamily(Font(resId = R.font.roboto_mono_medium)),
                     fontWeight = FontWeight(1000),
                     fontStyle = FontStyle.Normal,
                     fontSize = TextUnit(30f, TextUnitType.Sp)

@@ -20,13 +20,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.Button
@@ -76,7 +75,6 @@ import com.jinu.imagelabel.R
 import com.jinu.imagelabel.classification.Model
 import com.jinu.imagelabel.mvvm.MainViewModel
 import com.jinu.imagelabel.navigation.Screens
-import com.jinu.imagelabel.ui.theme.items.centerCrop
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -96,7 +94,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
             mutableDoubleStateOf(0.5)
         }
         var maxValue by remember {
-            mutableIntStateOf(5)
+            mutableIntStateOf(1)
         }
         var pathFile by remember {
             mutableStateOf("")
@@ -149,9 +147,20 @@ class HomeScreen(private val navController: NavController, private val viewModel
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(top = it.calculateTopPadding()),
-                verticalArrangement = Arrangement.Top,
+                verticalArrangement = Arrangement.SpaceAround,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
+                item {
+                    Text(
+                        text =
+                        "Empowering Doctors with Precision: Your MRI and X-Ray Symptom Navigator",
+                        modifier = Modifier.padding(20.dp),
+                        fontFamily = FontFamily(Font(resId = R.font.roboto_mono_medium)),
+                        fontWeight = FontWeight(1000),
+                        fontStyle = FontStyle.Normal,
+                        fontSize = TextUnit(14f, TextUnitType.Sp)
+                    )
+                }
                 item {
                     Column {
 
@@ -172,7 +181,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                 .onFocusEvent { focus ->
                                     if (focus.isFocused) dropDownState = true
                                 }
-                                .padding(top = 30.dp, start = 20.dp, end = 20.dp),
+                                .padding(start = 20.dp, end = 20.dp),
                             trailingIcon = {
                                 IconButton(onClick = { dropDownState = true }) {
                                     Icon(
@@ -220,7 +229,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                             },
                             modifier = Modifier
                                 .fillMaxWidth(0.5f)
-                                .padding(top = 30.dp, start = 20.dp, end = 20.dp),
+                                .padding(start = 20.dp, end = 20.dp),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                         )
                         OutlinedTextField(
@@ -237,19 +246,24 @@ class HomeScreen(private val navController: NavController, private val viewModel
                             },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 30.dp, start = 20.dp, end = 20.dp),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                                .padding(start = 20.dp, end = 20.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            enabled = true
                         )
                     }
 
 
                 }
                 item {
-                    Column(
+                    OutlinedCard(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                            .wrapContentSize()
+                            .width(320.dp)
+                            .height(320.dp),
+                        colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
+                        border = BorderStroke(
+                            5.dp,
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     ) {
                         Box(
                             modifier = Modifier
@@ -260,12 +274,12 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                 Log.e("filepath", viewModel._filePath.value)
                                 fileToBitmap(File(viewModel._filePath.value))?.let { it1 ->
                                     Image(
-                                        bitmap = it1.centerCrop(640, 640).asImageBitmap(),
+                                        bitmap = it1.asImageBitmap(),
                                         contentDescription = "",
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .fillMaxHeight(),
-                                        contentScale = ContentScale.Fit
+                                        contentScale = ContentScale.FillBounds
                                     )
                                     IconButton(
                                         onClick = {
@@ -282,27 +296,21 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                     }
                                 }
                             } else {
-                                OutlinedCard(
+                                Box(
                                     modifier = Modifier
-                                        .width(320.dp)
-                                        .height(320.dp)
-                                        .align(Alignment.Center),
-                                    colors = CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color.Transparent),
-                                    border = BorderStroke(
-                                        5.dp,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
+                                        .fillMaxWidth()
+                                        .fillMaxHeight()
                                 ) {
                                     Text(
                                         text = "Select a Image", modifier = Modifier
                                             .align(
-                                                Alignment.CenterHorizontally
+                                                Alignment.TopCenter
                                             )
                                             .padding(top = 30.dp)
                                     )
                                     Row(
                                         modifier = Modifier
-                                            .align(Alignment.CenterHorizontally)
+                                            .align(Alignment.Center)
                                             .padding(50.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.spacedBy(20.dp)
@@ -317,8 +325,6 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                                         cropShape = CropImageView.CropShape.RECTANGLE,
                                                         minCropResultWidth = 640,
                                                         minCropResultHeight = 640,
-                                                        maxCropResultHeight = 640,
-                                                        maxCropResultWidth = 640,
                                                     )
                                                 )
                                                 imageCropLauncher.launch(cropOptions)
@@ -331,7 +337,7 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                             )
                                         ) {
                                             Icon(
-                                                imageVector = Icons.Default.Camera,
+                                                imageVector = Icons.Default.CameraAlt,
                                                 contentDescription = ""
                                             )
                                         }
@@ -345,8 +351,6 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                                         cropShape = CropImageView.CropShape.RECTANGLE,
                                                         minCropResultWidth = 640,
                                                         minCropResultHeight = 640,
-                                                        maxCropResultHeight = 640,
-                                                        maxCropResultWidth = 640
                                                     )
                                                 )
                                                 imageCropLauncher.launch(cropOptions)
@@ -366,18 +370,15 @@ class HomeScreen(private val navController: NavController, private val viewModel
                                     }
                                 }
 
+
                             }
 
                         }
                     }
-
-
                 }
                 item {
 
                     Button(onClick = {
-
-
                         when (model) {
                             Model.BrainTumor.route -> navController.navigate(
                                 Screens.ResultScreen.withArgs(
@@ -422,15 +423,18 @@ class HomeScreen(private val navController: NavController, private val viewModel
         TopAppBar(
             title = {
                 Text(
-                    text = "FindDiseaseAi",
+                    text = "SymptoScan",
                     modifier = Modifier,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer,
-                    fontFamily = FontFamily(Font(resId = R.font.trochut_bold)),
+                    fontFamily = FontFamily(Font(resId = R.font.roboto_mono_thin)),
                     fontWeight = FontWeight(1000),
                     fontStyle = FontStyle.Normal,
                     fontSize = TextUnit(30f, TextUnitType.Sp)
                 )
-            })
+
+
+            },
+
+            )
     }
 
     private fun fileToBitmap(file: File): Bitmap? {

@@ -5,17 +5,15 @@ import android.graphics.Bitmap
 import android.util.Log
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
-import com.google.mediapipe.tasks.core.BaseOptions.DelegateOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 import com.jinu.finddiseaseai.classification.ModelClassifierInterface
-import com.jinu.imagelabel.ui.theme.items.centerCrop
 
 class ModelClassifier(
     context: Context,
     threshold: Float = 0.8f,
-    maxResult: Int = 2,
-    modelPath:String
+    maxResult: Int = 1,
+    modelPath: String
 ) : ModelClassifierInterface {
 
     private val options: ObjectDetector.ObjectDetectorOptions =
@@ -29,8 +27,7 @@ class ModelClassifier(
 
     override fun classify(bitmap: Bitmap): List<ClassificationResult> {
 
-        val image = bitmap.centerCrop(640,640)
-        val mpImage = BitmapImageBuilder(image).build()
+        val mpImage = BitmapImageBuilder(bitmap).build()
         val result = objectDetector.detect(mpImage)
 
         return result.detections().flatMap {
@@ -39,7 +36,12 @@ class ModelClassifier(
                 ClassificationResult(
                     name = category.categoryName(),
                     score = category.score(),
-                    boundingBox = Box(it.boundingBox().left, it.boundingBox().top,it.boundingBox().right,it.boundingBox().right)
+                    boundingBox = Box(
+                        it.boundingBox().left,
+                        it.boundingBox().top,
+                        it.boundingBox().right,
+                        it.boundingBox().right
+                    )
                 )
 
             }

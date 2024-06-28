@@ -1,1 +1,1 @@
-SymtoScan is a project that use on device ml tools to predict the scan reports like  mri, xray to predict the cuse
+Welcome to SymptoScan Ai, revolutionizing healthcare with AI-driven disease diagnosis. Empowering doctors with fast, accurate, and personalized insights for improved patient outcomes
